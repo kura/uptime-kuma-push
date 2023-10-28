@@ -73,4 +73,6 @@ while True:
             logger.error(f"'{item.name}' with URL '{item.url}' error. Not sending a ping", exc_info=True)
             pass
     end = monotonic()
-    sleep(max(10, 60 - (end - start)))
+    sleep_timer = max(10, 60 - (end - start))
+    logger.info(f"Sleeping for: {sleep_timer}")
+    sleep(sleep_timer)
