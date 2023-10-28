@@ -57,6 +57,7 @@ except TypeError:
     logger.error("Invalid MONITORS format. Allowed format is \"[name|url|push_token][,name|url|push_token,...]\"")
     exit(1)
 
+logger.info(f"Using PUSH_URL: {push_url}")
 logger.info("Loaded the following monitors:")
 for item in items:
     logger.info(f"Name: {item.name}, Url: {item.url}, Token: {item.token}")
