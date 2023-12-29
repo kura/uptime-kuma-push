@@ -9,4 +9,4 @@ RUN chmod 0755 ./run.py
 HEALTHCHECK --interval=1m --timeout=3s \
   CMD pidof python3 || exit 1
 
-CMD ["./run.py"]
+ENTRYPOINT ["./run.py"]
