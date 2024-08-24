@@ -2,6 +2,7 @@
 import logging
 import ssl
 from collections import namedtuple
+from multiprocessing import Pool
 from os import getenv
 from sys import exit
 from time import monotonic, sleep
@@ -62,17 +63,28 @@ logger.info("Loaded the following monitors:")
 for item in items:
     logger.info(f"Name: {item.name}, Url: {item.url}, Token: {item.token}")
 
+
+def ping_and_push(item):
+    try:
+        req = urlopen(item.url, timeout=5, context=ssl._create_unverified_context())
+        if req.status >= 200 and req.status <=300:
+            for i in range(0, 5):
+                logger.debug(f"'{item.name}' with URL '{item.url}' OK. Sending a ping")
+                try:
+                    urlopen(f"""{push_url.strip("/")}/{item.token}?status=up&msg=OK""", timeout=5)
+                    break
+                except:
+                    logger.error(f"'{item.name}' error sending ping. Retrying", exc_info=True)
+                    pass
+    except Exception as e:
+        logger.error(f"'{item.name}' with URL '{item.url}' error. Not sending a ping", exc_info=True)
+        pass
+
+
 while True:
     start = monotonic()
-    for item in items:
-        try:
-            req = urlopen(item.url, timeout=5, context=ssl._create_unverified_context())
-            if req.status >= 200 and req.status <=300:
-                logger.debug(f"'{item.name}' with URL '{item.url}' OK. Sending a ping")
-                urlopen(f"""{push_url.strip("/")}/{item.token}?status=up&msg=OK""", timeout=5)
-        except Exception as e:
-            logger.error(f"'{item.name}' with URL '{item.url}' error. Not sending a ping", exc_info=True)
-            pass
+    with Pool(len(items)) as p:
+        p.map(ping_and_push, items)
     end = monotonic()
     sleep_timer = max(10, 60 - (end - start))
     logger.info(f"Sleeping for: {sleep_timer}")
