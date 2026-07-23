@@ -1,12 +1,12 @@
 FROM alpine:latest
 
-RUN apk add python3
+RUN apk add --no-cache bash curl
 
-COPY ./run.py .
+COPY ./run.sh .
 
-RUN chmod 0755 ./run.py
+RUN chmod 0755 ./run.sh
 
 HEALTHCHECK --interval=1m --timeout=3s \
-  CMD pidof python3 || exit 1
+  CMD pidof bash || exit 1
 
-ENTRYPOINT ["./run.py"]
+ENTRYPOINT ["./run.sh"]
